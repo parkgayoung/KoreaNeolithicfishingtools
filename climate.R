@@ -66,6 +66,37 @@ early <-ggplot(site_early) +
   ylab("Mean annual temperature: mid (MAT, °C)") +
   theme_gray(base_family='Apple SD Gothic Neo')
 
+#Korea map
+library(ggmap)
+library(ggrepel)
+library(showtext)
+showtext_auto()
+
+# download background tiles for the map
+map <-
+  get_stamenmap(bbox = c(left = 125.5,
+                         bottom = 34,
+                         right = 	130,
+                         top = 38.5),
+                zoom = 9)
+
+early_site_map_plot <-
+  ggmap(map)  +
+  geom_point(data = site_early,
+             aes(long_dd ,
+                 lat_dd,
+                 colour = mean_annual_temperature),
+             size = 2.8) +
+  geom_text_repel(data = site_early,
+                  aes(long_dd ,
+                      lat_dd,
+                      label = site_name),
+                  size = 2,
+                  bg.color = "white",
+                  bg.r = 0.1) +
+  scale_colour_viridis_c(name = "MAT") +
+  theme_gray(base_family='Apple SD Gothic Neo')
+
 
 ###################
 
@@ -150,6 +181,28 @@ ggplot() +
   theme_minimal() +
   labs(y = "Mean annual temperature (MAT, °C)",
        x = "Year (BP)")
+
+# map
+
+site_mid <- tibble::rowid_to_column(site_mid, "ID")
+
+mid_site_map_plot <-
+  ggmap(map)  +
+  geom_point(data = site_mid,
+             aes(long_dd ,
+                 lat_dd,
+                 colour = mean_annual_temperature),
+             size = 2.8) +
+  geom_text_repel(data = site_mid,
+                  aes(long_dd ,
+                      lat_dd,
+                      label = ID),
+                  size = 2,
+                  bg.color = "white",
+                  bg.r = 0.1) +
+  scale_colour_viridis_c(name = "MAT") +
+  theme_gray(base_family='Apple SD Gothic Neo') 
+ 
 
 ###################
 
