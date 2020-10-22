@@ -15,7 +15,7 @@ months      <- ncdf4::ncvar_get(env_nc, "month")
 temperature <- ncdf4::ncvar_get(env_nc, "temperature")
 biome       <- ncdf4::ncvar_get(env_nc, "biome")
 ncdf4::nc_close(env_nc)
-
+ 
 mean_annual_temperature <- apply(temperature, c(1, 2, 4), mean)
 
 # korean archaeological sites
@@ -186,6 +186,13 @@ ggplot() +
 
 site_mid <- tibble::rowid_to_column(site_mid, "ID")
 
+
+table <- data.frame(cbind(ID=site_mid$ID, site_name=site_mid$site_name))
+#data.tb <- tibble(x = 127, y = 38, tb = list(table))
+
+#library(ggpmisc)
+#library(gridExtra)
+
 mid_site_map_plot <-
   ggmap(map)  +
   geom_point(data = site_mid,
@@ -201,8 +208,28 @@ mid_site_map_plot <-
                   bg.color = "white",
                   bg.r = 0.1) +
   scale_colour_viridis_c(name = "MAT") +
-  theme_gray(base_family='Apple SD Gothic Neo') 
+  theme_gray(base_family='Apple SD Gothic Neo')
+
+#ggplot() + theme_void()+xlab(NULL)+ylab(NULL) +geom_table(data = data.tb, aes(x=0, y=0, label = tb)) 
+#annotation_custom(tableGrob(table), xmin=126, xmax=130, ymin=34, ymax=38)
+  
+  
+  #annotate(geom = "table", x =128, y = 36, label = list(table), vjust = 1, hjust = 0)
  
+library(ggpubr)
+# Summary table plot, medium orange theme
+stable.p <- ggtexttable(table, rows = NULL, 
+                        theme = ttheme("blank"))
+
+
+ggarrange(mid_site_map_plot , stable.p, 
+          ncol = 2, nrow = 1,
+          heights = c(1, 0.5))
+
+library(cowplot)
+
+plot_grid(mid_site_map_plot , stable.p,
+          ncol = 1)
 
 ###################
 
