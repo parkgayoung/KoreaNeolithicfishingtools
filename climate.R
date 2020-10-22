@@ -8,7 +8,7 @@ require("ggplot2")
 file <- here::here("raw_data/LateQuaternary_Environment.nc")
 
 env_nc      <- ncdf4::nc_open(file)
-longitude   <- ncdf4::ncvar_get(env_nc, "longitude")
+longitude   <- ncdf4::ncvar_get(env_nc, "longitude") 
 latitude    <- ncdf4::ncvar_get(env_nc, "latitude")
 years       <- ncdf4::ncvar_get(env_nc, "time")
 months      <- ncdf4::ncvar_get(env_nc, "month")
