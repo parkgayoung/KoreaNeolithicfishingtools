@@ -23,7 +23,7 @@ library(tidyverse)
 library(here)
 
 site <-
-  readxl::read_excel(here("raw_data/location.xlsx"))
+  readxl::read_excel(here("raw_data/location_edit.xlsx"))
 
 # early period
 site_early <-
@@ -63,7 +63,7 @@ early <-ggplot(site_early) +
   geom_point() +
   coord_flip() +
   xlab("") +
-  ylab("Mean annual temperature: mid (MAT, °C)") +
+  ylab("Mean annual temperature: early (MAT, °C)") +
   theme_gray(base_family='Apple SD Gothic Neo')
 
 #Korea map
@@ -80,6 +80,8 @@ map <-
                          top = 38.5),
                 zoom = 9)
 
+site_early <- tibble::rowid_to_column(site_early, "ID")
+
 early_site_map_plot <-
   ggmap(map)  +
   geom_point(data = site_early,
@@ -87,10 +89,10 @@ early_site_map_plot <-
                  lat_dd,
                  colour = mean_annual_temperature),
              size = 2.8) +
-  geom_text_repel(data = site_early,
+  geom_text_repel(data = site_mid,
                   aes(long_dd ,
                       lat_dd,
-                      label = site_name),
+                      label = ID),
                   size = 2,
                   bg.color = "white",
                   bg.r = 0.1) +
@@ -162,25 +164,6 @@ ggplot(site_mid) +
   ylab("Mean annual temperature: mid (MAT, °C)") +
   theme_gray(base_family='Apple SD Gothic Neo')
 
-# add elevation: not working due to the short time period
-ggplot() +
-  geom_line(data = site_mid,
-            aes(-year,
-                mean_annual_temperature,
-                group = site_name),
-            colour = "grey90") +
-  geom_line(data = site_mid %>%
-              group_by(year) %>%
-              summarise(mean_mean_annual_temperature = mean(mean_annual_temperature,
-                                                            na.rm = TRUE)),
-            aes(-year,
-                mean_mean_annual_temperature),
-            size = 2) +
-  scale_x_continuous(labels = scales::comma) +
-  coord_cartesian(ylim = c(1, 12)) +
-  theme_minimal() +
-  labs(y = "Mean annual temperature (MAT, °C)",
-       x = "Year (BP)")
 
 # map
 
@@ -276,6 +259,25 @@ late <- ggplot(site_late) +
   theme_gray(base_family='Apple SD Gothic Neo')
 
 
+#map for late
+site_late <- tibble::rowid_to_column(site_late, "ID")
+
+late_site_map_plot <-
+  ggmap(map)  +
+  geom_point(data = site_late,
+             aes(long_dd ,
+                 lat_dd,
+                 colour = mean_annual_temperature),
+             size = 2.8) +
+  geom_text_repel(data = site_mid,
+                  aes(long_dd ,
+                      lat_dd,
+                      label = ID),
+                  size = 2,
+                  bg.color = "white",
+                  bg.r = 0.1) +
+  scale_colour_viridis_c(name = "MAT") +
+  theme_gray(base_family='Apple SD Gothic Neo')
 
 
 #----------------------------------------------------------------------
@@ -287,3 +289,102 @@ plot_grid(early,
           mid,
           late,
           ncol = 1)
+
+plot_grid(early_site_map_plot, mid_site_map_plot, late_site_map_plot, ncol = 3)
+
+################
+
+# initial-early
+site_initial_early <-
+  site %>%
+  select(site_name,
+         lat_dd,
+         long_dd,
+         elevation,
+         period) %>%
+  filter(period == c("initial","early")) %>% 
+  rowwise()  %>%
+  mutate(lonID = which.min(abs(longitude - long_dd)),
+         latID = which.min(abs(latitude - lat_dd))) %>%
+  mutate(mean_annual_temperature = list(tibble(year = years,
+                                               mean_annual_temperature = mean_annual_temperature[lonID, latID, ]))) %>%
+  unnest(mean_annual_temperature) %>%
+  filter(between(year, -9950, -5450))%>% 
+  filter(mean_annual_temperature >0 )
+
+
+# try to make boxplot
+initial_early_mat_per_site_plot <-
+  ggplot(site_initial_early) +
+  aes(y = mean_annual_temperature,
+      x = reorder(site_name,
+                  mean_annual_temperature)) +
+  geom_boxplot() +
+  coord_flip() +
+  xlab("") +
+  ylab("Mean annual temperature: initial&early (MAT, °C)") +
+  theme_gray(base_family='Apple SD Gothic Neo')
+
+#-------------
+
+# mid-late
+site_mid_late <-
+  site %>%
+  select(site_name,
+         lat_dd,
+         long_dd,
+         elevation,
+         period) %>%
+  filter(period == c("mid","late")) %>% 
+  rowwise()  %>%
+  mutate(lonID = which.min(abs(longitude - long_dd)),
+         latID = which.min(abs(latitude - lat_dd))) %>%
+  mutate(mean_annual_temperature = list(tibble(year = years,
+                                               mean_annual_temperature = mean_annual_temperature[lonID, latID, ]))) %>%
+  unnest(mean_annual_temperature) %>%
+  filter(between(year, -5450, -4150))%>% 
+  filter(mean_annual_temperature >0 )
+
+
+# try to make boxplot
+mid_late_mat_per_site_plot <-
+  ggplot(site_mid_late) +
+  aes(y = mean_annual_temperature,
+      x = reorder(site_name,
+                  mean_annual_temperature)) +
+  geom_boxplot() +
+  coord_flip() +
+  xlab("") +
+  ylab("Mean annual temperature: mid&late (MAT, °C)") +
+  theme_gray(base_family='Apple SD Gothic Neo')
+
+# last
+site_last <-
+  site %>%
+  select(site_name,
+         lat_dd,
+         long_dd,
+         elevation,
+         period) %>%
+  filter(period == "last") %>% 
+  rowwise()  %>%
+  mutate(lonID = which.min(abs(longitude - long_dd)),
+         latID = which.min(abs(latitude - lat_dd))) %>%
+  mutate(mean_annual_temperature = list(tibble(year = years,
+                                               mean_annual_temperature = mean_annual_temperature[lonID, latID, ]))) %>%
+  unnest(mean_annual_temperature) %>%
+  filter(between(year, -4150, -3450))%>% 
+  filter(mean_annual_temperature >0 )
+
+
+# try to make boxplot
+last_mat_per_site_plot <-
+  ggplot(site_last) +
+  aes(y = mean_annual_temperature,
+      x = reorder(site_name,
+                  mean_annual_temperature)) +
+  geom_boxplot() +
+  coord_flip() +
+  xlab("") +
+  ylab("Mean annual temperature: mid&late (MAT, °C)") +
+  theme_gray(base_family='Apple SD Gothic Neo')
