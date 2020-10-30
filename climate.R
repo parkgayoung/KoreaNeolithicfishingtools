@@ -56,7 +56,7 @@ mat_per_site_plot <-
   theme_gray(base_family='Apple SD Gothic Neo')
 
 #scatter plot
-early <-ggplot(site_early) + 
+early <-ggplot(site_early) +  
   aes(y = mean_annual_temperature,
       x = reorder(site_name,
                   mean_annual_temperature)) +
