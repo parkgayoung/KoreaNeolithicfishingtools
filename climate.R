@@ -290,7 +290,10 @@ plot_grid(early,
           late,
           ncol = 1)
 
-plot_grid(early_site_map_plot, mid_site_map_plot, late_site_map_plot, ncol = 3)
+plot_grid(early_site_map_plot, 
+          mid_site_map_plot, 
+          late_site_map_plot, 
+          ncol = 3) 
 
 ################
 
