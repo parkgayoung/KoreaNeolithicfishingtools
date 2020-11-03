@@ -122,7 +122,7 @@ initial_mat_per_site_plot <-
   geom_boxplot() +
   coord_flip() +
   xlab("") +
-  ylab("Mean annual temperature (MAT, °C)") +
+  ylab("Mean annual temperature: initial (MAT, °C)") +
   theme_gray(base_family='Apple SD Gothic Neo')
 
 #scatter plot
@@ -241,21 +241,7 @@ mid_site_map_plot <-
   
   
   #annotate(geom = "table", x =128, y = 36, label = list(table), vjust = 1, hjust = 0)
- 
-library(ggpubr)
-# Summary table plot, medium orange theme
-stable.p <- ggtexttable(table, rows = NULL, 
-                        theme = ttheme("blank"))
 
-
-ggarrange(mid_site_map_plot , stable.p, 
-          ncol = 2, nrow = 1,
-          heights = c(1, 0.5))
-
-library(cowplot)
-
-plot_grid(mid_site_map_plot , stable.p,
-          ncol = 1)
 
 ###################
 
@@ -291,7 +277,7 @@ late_mat_per_site_plot <-
   theme_gray(base_family='Apple SD Gothic Neo')
 
 #scatter plot
-site_late <- ggplot(site_late) +
+late <- ggplot(site_late) +
   aes(y = mean_annual_temperature,
       x = reorder(site_name,
                   mean_annual_temperature)) +
@@ -312,6 +298,8 @@ site_late_mean <- site_late %>%
 site_late_mean <- tibble::rowid_to_column(site_late_mean, "ID")
 
 
+
+
 late_site_map_plot <-
   ggmap(map)  +
   geom_point(data = site_late_mean,
@@ -319,7 +307,7 @@ late_site_map_plot <-
                  lat_dd,
                  colour = av_mat),
              size = 2.8) +
-  geom_text_repel(data = site_late,
+  geom_text_repel(data = site_late_mean,
                   aes(long_dd ,
                       lat_dd,
                       label = ID),
@@ -372,7 +360,7 @@ last <- ggplot(site_last) +
   geom_point() +
   coord_flip() +
   xlab("") +
-  ylab("Mean annual temperature: late (MAT, °C)") +
+  ylab("Mean annual temperature: last (MAT, °C)") +
   theme_gray(base_family='Apple SD Gothic Neo')
 
 
@@ -390,9 +378,11 @@ last_site_map_plot <-
                   aes(long_dd ,
                       lat_dd,
                       label = ID),
-                  size = 2,
-                  bg.color = "white",
+                  size = 3,
+                  #bg.color = "white",
                   bg.r = 0.1) +
   scale_colour_viridis_c(name = "MAT") +
-  theme_gray(base_family='Apple SD Gothic Neo')
+  theme_gray(base_family='Apple SD Gothic Neo')+
+  ggtitle("Site Location and MAT: last") +
+  theme(plot.title = element_text(size=18))
 
