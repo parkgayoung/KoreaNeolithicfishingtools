@@ -108,7 +108,7 @@ site_initial <-
   mutate(mean_annual_temperature = list(tibble(year = years,
                                                mean_annual_temperature = mean_annual_temperature[lonID, latID, ]))) %>%
   unnest(mean_annual_temperature) %>%
-  filter(between(year, -9950, -6450))%>% 
+  filter(between(year, -7950, -6450))%>% 
   filter(mean_annual_temperature >0 )
 
 
@@ -298,10 +298,15 @@ site_late_mean <- site_late %>%
 site_late_mean <- tibble::rowid_to_column(site_late_mean, "ID")
 
 
-
+map_later <-
+  get_stamenmap(bbox = c(left = 125.5,
+                         bottom = 33,
+                         right = 	130,
+                         top = 38.6),
+                zoom = 9)
 
 late_site_map_plot <-
-  ggmap(map)  +
+  ggmap(map_later)  +
   geom_point(data = site_late_mean,
              aes(long_dd ,
                  lat_dd,
@@ -368,7 +373,7 @@ last <- ggplot(site_last) +
 site_last <- tibble::rowid_to_column(site_last, "ID")
 
 last_site_map_plot <-
-  ggmap(map)  +
+  ggmap(map_later)  +
   geom_point(data = site_last,
              aes(long_dd ,
                  lat_dd,
@@ -385,4 +390,46 @@ last_site_map_plot <-
   theme_gray(base_family='Apple SD Gothic Neo')+
   ggtitle("Site Location and MAT: last") +
   theme(plot.title = element_text(size=18))
+
+
+########comparison
+
+
+site_all <-
+  site %>%
+  select(site_name,
+         lat_dd,
+         long_dd,
+         period) %>%
+  rowwise()  %>%
+  mutate(lonID = which.min(abs(longitude - long_dd)),
+         latID = which.min(abs(latitude - lat_dd))) %>%
+  mutate(mean_annual_temperature = list(tibble(year = years,
+                                               mean_annual_temperature = mean_annual_temperature[lonID, latID, ]))) %>%
+  unnest(mean_annual_temperature) %>%
+  filter(between(year, -9950, -3450)) %>% 
+  filter(mean_annual_temperature >0 ) %>% 
+group_by(site_name) %>% 
+  summarise(av_mat_all = mean(mean_annual_temperature),
+            long_dd = mean(long_dd),
+            lat_dd = mean(lat_dd), period, year)
+
+ggplot() +
+  geom_line(data = site_all,
+            aes(-year,
+                av_mat_all,
+                group = site_name),
+            colour = "grey90") +
+  geom_line(data = site_all %>%
+              group_by(year) %>%
+              summarise(av_mat_all = mean(av_mat_all, na.rm = TRUE)),
+            aes(-year,
+                av_mat_all),
+            size = 2) +
+  scale_x_continuous(labels = scales::comma) +
+  coord_cartesian(ylim = c(1, 12)) +
+  theme_minimal() +
+  labs(y = "Mean annual temperature (MAT, °C)",
+       x = "Year (BP)")
+
 
